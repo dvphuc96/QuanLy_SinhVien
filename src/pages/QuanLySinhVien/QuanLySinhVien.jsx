@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import TableSinhVien from "./TableSinhVien";
-
+import _ from "lodash";
 export default class QuanLySinhVien extends Component {
   state = {
     formValue: {
@@ -31,7 +31,21 @@ export default class QuanLySinhVien extends Component {
         email: "hdquang.1999@gmail.com",
       },
     ],
-    // toi ve lam search sinh vien
+    arrSinhVienClone: [
+      {
+        maSV: 1,
+        tenSV: "Do Van Phuc",
+        soDienThoai: "0396244169",
+        email: "phuc.dovan.96@gmail.com",
+      },
+      {
+        maSV: 2,
+        tenSV: "Ho Duy Quang",
+        soDienThoai: "0357661024",
+        email: "hdquang.1999@gmail.com",
+      },
+    ],
+    keyword: "",
   };
   static getDerivedStateFromProps(newProps, currentState) {
     // console.log("getDerivedStateFromProps");
@@ -81,31 +95,37 @@ export default class QuanLySinhVien extends Component {
     return str.trim().toLowerCase();
   };
   handleSearchInput = (e) => {
-    let tuKhoa = e.target.value;
-    tuKhoa = tuKhoa.trim().toLowerCase();
-    tuKhoa = this.removeVietnameseTones(tuKhoa);
-    let arrSinhVien = this.state.arrSinhVien;
-    let c = [];
-    arrSinhVien.forEach((sv) => {
-      var tenSinhVien = sv.tenSV;
-      tenSinhVien = this.removeVietnameseTones(tenSinhVien);
-      if (tuKhoa === "") {
-        c = arrSinhVien;
-      } else if (tenSinhVien.includes(tuKhoa)) {
-        c.push(sv);
-      }
-    });
-
+    let { value } = e.target;
     this.setState({
-      searchArrSinhVien: c,
+      keyword: value,
     });
+  };
+  searchSinhVien = () => {
+    let keyword = this.state.keyword;
+    keyword = keyword.trim().toLocaleLowerCase();
+    keyword = this.removeVietnameseTones(keyword);
+
+    let arrSinhVien = this.state.arrSinhVien;
+    let arrKetQua = _.filter(arrSinhVien, (sv) => {
+      let tenSinhVien = sv.tenSV;
+      tenSinhVien = this.removeVietnameseTones(tenSinhVien);
+      return _.includes(tenSinhVien, keyword);
+    });
+    this.setState({
+      arrSinhVien: arrKetQua,
+    });
+  };
+  clearKeyWord = () => {
+    let arrSinhVien = this.state.arrSinhVienClone;
+    this.setState({
+      keyword: "",
+      arrSinhVien: arrSinhVien,
+    })
   };
   handleChangeInput = (e) => {
     let { value, name } = e.target;
     let dataType = e.target.getAttribute("data-type");
     let dataMaxLength = e.target.getAttribute("data-max-length");
-    let dataExists = e.target.getAttribute("data-name-exists");
-    console.log(dataExists);
 
     let newFormValue = this.state.formValue;
     newFormValue[name] = value;
@@ -167,6 +187,7 @@ export default class QuanLySinhVien extends Component {
     arrSinhVien.push(newArrSinhVien);
     this.setState({
       arrSinhVien: arrSinhVien,
+      arrSinhVienClone: arrSinhVien,
     });
   };
   updateSinhVien = () => {
@@ -181,6 +202,7 @@ export default class QuanLySinhVien extends Component {
     }
     this.setState({
       arrSinhVien: arrSinhVien,
+      arrSinhVienClone: arrSinhVien,
     });
   };
   handleUpdateSinhVien = (svUpdate) => {
@@ -199,10 +221,11 @@ export default class QuanLySinhVien extends Component {
     let arrSinhVien = this.state.arrSinhVien.filter((sv) => sv.maSV !== maSV);
     this.setState({
       arrSinhVien: arrSinhVien,
+      arrSinhVienClone: arrSinhVien,
     });
   };
   render() {
-    let { formValue } = this.state;
+    let { formValue, keyword } = this.state;
     return (
       <>
         <form className="container mt-5" onSubmit={this.createSinhVien}>
@@ -308,16 +331,24 @@ export default class QuanLySinhVien extends Component {
               <input
                 type="search"
                 name="tuKhoa"
+                value={keyword}
                 className="form-control"
                 onInput={this.handleSearchInput}
               />
-              {/* <button
+              <button
                 className="btn btn-outline-secondary"
                 type="button"
                 onClick={this.searchSinhVien}
               >
-                <i className="fas fa-search" />
-              </button> */}
+                Search
+              </button>
+              <button
+                className="btn btn-outline-secondary mx-2"
+                type="button"
+                onClick={this.clearKeyWord}
+              >
+                Reset Keyword
+              </button>
             </div>
           </div>
         </form>
@@ -335,8 +366,6 @@ export default class QuanLySinhVien extends Component {
   //   console.log("componentDidMount");
   // }
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.formValue);
-    console.log(prevProps);
-    console.log(prevState);
+    this.setState()
   }
 }
